@@ -1,6 +1,4 @@
 import { Web3Storage } from 'web3.storage'
-import { CreatedWork } from '../v1/creatorarmour/creatorarmour.schema'
-import axios from 'axios'
 
 function getAccessToken() {
     return process.env.WEB3STORAGE_TOKEN
