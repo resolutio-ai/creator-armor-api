@@ -1,34 +1,62 @@
 import axios from "axios";
 import { retrieveFiles } from "../../web3storage";
 import { CreatedWork } from "./creatorarmour.schema";
+import { executeUserOp, getPartialUserOp } from "../../biconomy";
+import { ethers } from "ethers";
+import { getNetworkConfig } from "../../../resources/utils/network.utils";
 
-export const getFiles = async (cid: string) => {
-    const files = await retrieveFiles(cid);
+class CreateArmourService {
 
-    if (files.length === 0) {
-        throw new Error("No files found.");
-    }
+    getFiles = async (cid: string, chainname : string) => {
+        const files = await retrieveFiles(cid);
 
-    const creatorDetails: CreatedWork = {
-        nameOfWork: "",
-        creatorId: "",
-        altMedium: "",
-        medium: "",
-        license: "",
-        timeStamp: "",
-        image: "",
+        if (files.length === 0) {
+            throw new Error("No files found.");
+        }
+
+        const creatorDetails: CreatedWork = {
+            nameOfWork: "",
+            creatorId: "",
+            altMedium: "",
+            medium: "",
+            license: "",
+            timeStamp: "",
+            image: "",
+        };
+
+        await Promise.all(
+            files.map(async (file) => {
+                if (file.name.includes(".jpeg") || file.name.includes(".png")) {
+                    creatorDetails.image = `https://ipfs.io/ipfs/${file.cid}`;
+                } else {
+                    const response = await axios.get(`https://${file.cid}.ipfs.w3s.link/`);
+                    creatorDetails[file.name] = response.data as string;
+                }
+            })
+        );
+
+        return creatorDetails;
     };
 
-    await Promise.all(
-        files.map(async (file) => {
-            if (file.name.includes(".jpeg") || file.name.includes(".png")) {
-                creatorDetails.image = `https://ipfs.io/ipfs/${file.cid}`;
-            } else {
-                const response = await axios.get(`https://${file.cid}.ipfs.w3s.link/`);
-                creatorDetails[file.name] = response.data as string;
-            }
-        })
-    );
+    getTimeStampHash = async (cid: string, chainname: string) => {
 
-    return creatorDetails;
-};
+        const { chainId, contractAddress } = getNetworkConfig(chainname);
+
+        const nftInterface = new ethers.utils.Interface([
+            "function createTimeStamp(string cid)",
+        ]);
+
+        const data = nftInterface.encodeFunctionData("createTimeStamp", [cid]);
+
+        const transaction = {
+            to: contractAddress,
+            data: data
+        };
+
+        const partialUserOp = await getPartialUserOp(transaction, chainId);
+
+        return await executeUserOp(partialUserOp);
+    }
+}
+
+export default new CreateArmourService();

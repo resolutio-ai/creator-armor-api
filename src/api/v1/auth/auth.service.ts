@@ -1,4 +1,4 @@
-import { getMagicAdmin } from "../../../resources/magic";
+import { getMagicAdmin } from "../../magic";
 
 class AuthService {
     async validateDIDToken(didToken: string) {
