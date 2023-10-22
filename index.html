@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload and Data Submission</title>
+</head>
+<body>
+    <h1>Upload a File and Enter Your Information</h1>
+
+    <form id="upload-form">
+        <input type="file" id="file-upload" accept="image/*" required>
+        <br>
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+        <br>
+        <label for="age">Age:</label>
+        <input type="number" id="age" required>
+        <br>
+        <label for="occupation">Occupation:</label>
+        <input type="text" id="occupation" required>
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('file-upload');
+            const nameInput = document.getElementById('name');
+            const ageInput = document.getElementById('age');
+            const occupationInput = document.getElementById('occupation');
+
+            const filesArray = [];
+            const imageFile = fileInput.files[0];
+            const infoObject = {
+                name: nameInput.value,
+                age: ageInput.value,
+                occupation: occupationInput.value
+            };
+
+            // Create a File object for the image
+            filesArray.push(new File([imageFile], imageFile.name, { type: imageFile.type }));
+
+            // Create a JSON file for the information
+            const infoBlob = new Blob([JSON.stringify(infoObject)], { type: 'application/json' });
+            filesArray.push(new File([infoBlob], 'info.json', { type: 'application/json' }));
+
+            // Simulate a POST request to a create endpoint (replace with your actual endpoint)
+            // You can use the Fetch API or other methods to send this data to your server.
+            // Example using the Fetch API:
+            fetch('your-create-endpoint-url', {
+                method: 'POST',
+                body: new FormData(this) // Include other form fields if needed
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Handle a successful response
+                    console.log('Data submitted successfully.');
+                } else {
+                    // Handle errors
+                    console.error('Error while submitting data.');
+                }
+            })
+            .catch(error => {
+                console.error('Network error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
