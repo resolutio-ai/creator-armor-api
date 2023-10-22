@@ -1,1 +1,1 @@
-export type Web3Environment = "polygonTestnet" | "scrollTestnet" | "optimismTestnet";
+export type Web3Environment = "polygonTestnet" | "scrollTestnet" | "optimismTestnet" | "filecoinTestnet";

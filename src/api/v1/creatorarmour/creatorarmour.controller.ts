@@ -7,43 +7,43 @@ import { CreatedWork } from "./creatorarmour.schema";
 class CreatorArmourController {
     getCreatedWork = async (request: Request, response: Response) => {
         const { cid, chainName } = request.query;
-    
-        if (!cid) {
+
+        if (!cid || !chainName) {
             response.status(BAD_REQUEST).send({})
         }
-    
+
         let work: CreatedWork | null = null;
-    
+
         try {
-            work = await creatorarmourServices.getFiles(cid as string, chainName);
+            work = await creatorarmourServices.getFiles(cid as string, chainName as string);
         } catch (error: any) {
             return response.status(INTERNAL_SERVER_ERROR).
                 send({
                     message: `An Error Ocurred: \n${error.message}`
                 });
         }
-    
+
         return response.status(OK).send({ message: "Success", data: work });
     }
-    
+
     createTimeStamp = async (request: Request, response: Response) => {
-        const { files, chainId } = request.body;
-    
-        if (!files || files.length < ONE || !chainId) {
+        const { files, chainName } = request.body;
+
+        if (!files || files.length < ONE || !chainName) {
             return response.status(BAD_REQUEST).send({ message: "Invalid Parameters Sent" });
         }
-    
+
         let cid;
         let hash;
-    
+
         try {
             cid = await storeFiles(files);
-    
-            hash = await creatorarmourServices.getTimeStampHash(cid as string, chainId);
+
+            hash = await creatorarmourServices.getTimeStampHash(cid as string, chainName);
         } catch (error: any) {
             return response.status(INTERNAL_SERVER_ERROR).send({ message: `An Error Ocurred: \n${error.message}` })
         }
-    
+
         return response.status(OK).send(
             {
                 message: "Success",

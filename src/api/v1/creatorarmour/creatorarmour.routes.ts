@@ -1,7 +1,9 @@
 import express from "express";
 import creatorarmourController from "./creatorarmour.controller";
 
-const router = express.Router();
+const creatorArmorRouter = express.Router();
 
-router.post("/", creatorarmourController.createTimeStamp)
+creatorArmorRouter.post("/", creatorarmourController.createTimeStamp)
     .get("/", creatorarmourController.getCreatedWork)
+
+export default creatorArmorRouter;

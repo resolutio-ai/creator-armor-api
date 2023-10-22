@@ -12,7 +12,6 @@ import {
     PaymasterMode,
     SponsorUserOperationDto,
 } from '@biconomy/paymaster'
-import { Address } from "viem";
 
 config();
 
@@ -22,13 +21,11 @@ let bundler: Bundler;
 
 let address: string
 
-
-const paymaster: IPaymaster = new BiconomyPaymaster({
-    paymasterUrl:
-        "https://paymaster.biconomy.io/api/v1/80001/Tpk8nuCUd.70bd3a7f-a368-4e5a-af14-80c7f1fcda1a",
-});
-
-
+const getPayMaster = (chainId: number) => {
+    return new BiconomyPaymaster({
+        paymasterUrl: `${process.env.PAYMASTER_BASE_URL}/${ChainId}/${process.env.PAYMASTER_API_KEY}`
+    });
+}
 
 const getWallet = (rpcUrl: string) => {
     const provider = new providers.JsonRpcProvider(
@@ -51,7 +48,7 @@ const getModule = async (rpcUrl: string) => {
     return await ECDSAOwnershipValidationModule.create({
         signer: getWallet(rpcUrl),
         moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE
-    })
+    });
 }
 
 export async function createAccount(chainId: number) {
@@ -61,7 +58,7 @@ export async function createAccount(chainId: number) {
     smartAccount ??= await BiconomySmartAccountV2.create({
         chainId: ChainId.POLYGON_MUMBAI,
         bundler: bundler,
-        paymaster: paymaster,
+        paymaster: getPayMaster(chainId),
         entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
         defaultValidationModule: await getModule(rpcUrl),
         activeValidationModule: await getModule(rpcUrl)
@@ -90,7 +87,7 @@ export const executeUserOp = async (partialUserOp: Partial<UserOperation>) => {
     }
 }
 
-export const getPartialUserOp = async (transaction: { to: string, data: any }, chainId : number) => {
+export const getPartialUserOp = async (transaction: { to: string, data: any }, chainId: number) => {
 
     await createAccount(chainId);
 
